@@ -1,56 +1,3 @@
-import express from "express";
-import bodyParser from "body-parser";
-import mongoose from "mongoose";
-import cors from "cors";
-import dotenv from "dotenv";
-import helmet from "helmet";
-import morgan from "morgan";
-
-import clientRoutes from "./routes/client.js";
-import generalRoutes from "./routes/general.js";
-import managementRoutes from "./routes/management.js";
-import salesRoutes from "./routes/sales.js";
-
-dotenv.config();
-
-// Safely read env once
-const { PORT = 9000, MONGO_URL } = process.env;
-if (!MONGO_URL) {
-  console.error("Missing MONGO_URL in environment");
-  process.exit(1);
-}
-
-const app = express();
-app.use(express.json());
-app.use(helmet());
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-app.use(morgan("common"));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors());
-
-// Routes
-app.use("/client", clientRoutes);
-app.use("/general", generalRoutes);
-app.use("/management", managementRoutes);
-app.use("/sales", salesRoutes);
-
-// Connect DB, then start server
-(async () => {
-  try {
-    await mongoose.connect(MONGO_URL, {
-      // Mongoose v8+ sensible defaults
-      serverSelectionTimeoutMS: 10000,
-    });
-    console.log("MongoDB connected");
-    app.listen(Number(PORT), () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  } catch (err) {
-    console.error("Mongo connection failed:", err);
-    process.exit(1);
-  }
-})();
 // import express from "express";
 // import bodyParser from "body-parser";
 // import mongoose from "mongoose";
@@ -58,29 +5,21 @@ app.use("/sales", salesRoutes);
 // import dotenv from "dotenv";
 // import helmet from "helmet";
 // import morgan from "morgan";
+
 // import clientRoutes from "./routes/client.js";
 // import generalRoutes from "./routes/general.js";
 // import managementRoutes from "./routes/management.js";
 // import salesRoutes from "./routes/sales.js";
 
-// // data imports
-// import User from "./models/User.js";
-// import Product from "./models/Product.js";
-// import ProductStat from "./models/ProductStat.js";
-// import Transaction from "./models/Transaction.js";
-// import OverallStat from "./models/OverallStat.js";
-// import AffiliateStat from "./models/AffiliateStat.js";
-// import {
-//   dataUser,
-//   dataProduct,
-//   dataProductStat,
-//   dataTransaction,
-//   dataOverallStat,
-//   dataAffiliateStat,
-// } from "./data/index.js";
-
-// /* CONFIGURATION */
 // dotenv.config();
+
+// // Safely read env once
+// const { PORT = 9000, MONGO_URL } = process.env;
+// if (!MONGO_URL) {
+//   console.error("Missing MONGO_URL in environment");
+//   process.exit(1);
+// }
+
 // const app = express();
 // app.use(express.json());
 // app.use(helmet());
@@ -90,34 +29,95 @@ app.use("/sales", salesRoutes);
 // app.use(bodyParser.urlencoded({ extended: false }));
 // app.use(cors());
 
-// /* ROUTES */
+// // Routes
 // app.use("/client", clientRoutes);
 // app.use("/general", generalRoutes);
 // app.use("/management", managementRoutes);
 // app.use("/sales", salesRoutes);
 
-// /* MONGOOSE SETUP */
-// const PORT = process.env.PORT || 9000;
-// mongoose
-//   .connect(process.env.MONGO_URL, {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true,
-//   })
-//   .then(() => {
-//     app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
+// // Connect DB, then start server
+// (async () => {
+//   try {
+//     await mongoose.connect(MONGO_URL, {
+//       // Mongoose v8+ sensible defaults
+//       serverSelectionTimeoutMS: 10000,
+//     });
+//     console.log("MongoDB connected");
+//     app.listen(Number(PORT), () => {
+//       console.log(`Server running on port ${PORT}`);
+//     });
+//   } catch (err) {
+//     console.error("Mongo connection failed:", err);
+//     process.exit(1);
+//   }
+// })();
+import express from "express";
+import bodyParser from "body-parser";
+import mongoose from "mongoose";
+import cors from "cors";
+import dotenv from "dotenv";
+import helmet from "helmet";
+import morgan from "morgan";
+import clientRoutes from "./routes/client.js";
+import generalRoutes from "./routes/general.js";
+import managementRoutes from "./routes/management.js";
+import salesRoutes from "./routes/sales.js";
 
-//     /* ONLY ADD DATA ONE TIME */
-//     // AffiliateStat.insertMany(dataAffiliateStat);
-//     // OverallStat.insertMany(dataOverallStat);
-//     // Product.insertMany(dataProduct);
-//     // ProductStat.insertMany(dataProductStat);
-//     // Transaction.insertMany(dataTransaction);
-//     // User.insertMany(dataUser);
-//   })
-//   .catch((error) => console.log(`${error} did not connect`));
+// data imports
+import User from "./models/User.js";
+import Product from "./models/Product.js";
+import ProductStat from "./models/ProductStat.js";
+import Transaction from "./models/Transaction.js";
+import OverallStat from "./models/OverallStat.js";
+import AffiliateStat from "./models/AffiliateStat.js";
+import {
+  dataUser,
+  dataProduct,
+  dataProductStat,
+  dataTransaction,
+  dataOverallStat,
+  dataAffiliateStat,
+} from "./data/index.js";
 
-// app.use((err, req, res, next) => {
-//   console.error(err);
-//   if (res.headersSent) return next(err);
-//   res.status(err.status || 500).json({ error: err.message || "Server error" });
-// });
+/* CONFIGURATION */
+dotenv.config();
+const app = express();
+app.use(express.json());
+app.use(helmet());
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+app.use(morgan("common"));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cors({ origin: ["http://localhost:3000", "http://127.0.0.1:3000"] }));
+app.get("/health", (req, res) => res.json({ status: "ok" }));
+/* ROUTES */
+app.use("/client", clientRoutes);
+app.use("/general", generalRoutes);
+app.use("/management", managementRoutes);
+app.use("/sales", salesRoutes);
+
+/* MONGOOSE SETUP */
+const PORT = process.env.PORT || 9000;
+mongoose
+  .connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
+
+    /* ONLY ADD DATA ONE TIME */
+    // AffiliateStat.insertMany(dataAffiliateStat);
+    // OverallStat.insertMany(dataOverallStat);
+    // Product.insertMany(dataProduct);
+    // ProductStat.insertMany(dataProductStat);
+    // Transaction.insertMany(dataTransaction);
+    // User.insertMany(dataUser);
+  })
+  .catch((error) => console.log(`${error} did not connect`));
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  if (res.headersSent) return next(err);
+  res.status(err.status || 500).json({ error: err.message || "Server error" });
+});
