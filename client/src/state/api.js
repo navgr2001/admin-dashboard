@@ -1,8 +1,22 @@
+// src/state/api.js
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const api = createApi({
-  baseQuery: fetchBaseQuery({ baseUrl: process.env.REACT_APP_BASE_URL }),
   reducerPath: "adminApi",
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.REACT_APP_BASE_URL, // e.g. http://localhost:5001/
+    prepareHeaders: (headers) => {
+      headers.set("Accept", "application/json");
+      return headers;
+    },
+    // If the server returns non-JSON, this avoids a parsing error.
+    // (You can remove this if your server always returns JSON.)
+    responseHandler: async (response) => {
+      const ct = response.headers.get("content-type") || "";
+      if (ct.includes("application/json")) return response.json();
+      return response.text();
+    },
+  }),
   tagTypes: [
     "User",
     "Products",
@@ -15,12 +29,26 @@ export const api = createApi({
     "Dashboard",
   ],
   endpoints: (build) => ({
+    /* ---------- General ---------- */
     getUser: build.query({
       query: (id) => `general/user/${id}`,
       providesTags: ["User"],
     }),
+    getDashboard: build.query({
+      query: () => "general/dashboard",
+      providesTags: ["Dashboard"],
+    }),
+
+    /* ---------- Client-facing ---------- */
     getProducts: build.query({
       query: () => "client/products",
+      // Always give the UI an array to map over
+      transformResponse: (res) => {
+        if (Array.isArray(res)) return res;
+        if (Array.isArray(res?.products)) return res.products;
+        if (Array.isArray(res?.data)) return res.data;
+        return [];
+      },
       providesTags: ["Products"],
     }),
     getCustomers: build.query({
@@ -28,7 +56,7 @@ export const api = createApi({
       providesTags: ["Customers"],
     }),
     getTransactions: build.query({
-      query: ({ page, pageSize, sort, search }) => ({
+      query: ({ page, pageSize, sort, search } = {}) => ({
         url: "client/transactions",
         method: "GET",
         params: { page, pageSize, sort, search },
@@ -39,10 +67,14 @@ export const api = createApi({
       query: () => "client/geography",
       providesTags: ["Geography"],
     }),
+
+    /* ---------- Sales ---------- */
     getSales: build.query({
       query: () => "sales/sales",
       providesTags: ["Sales"],
     }),
+
+    /* ---------- Management ---------- */
     getAdmins: build.query({
       query: () => "management/admins",
       providesTags: ["Admins"],
@@ -50,10 +82,6 @@ export const api = createApi({
     getUserPerformance: build.query({
       query: (id) => `management/performance/${id}`,
       providesTags: ["Performance"],
-    }),
-    getDashboard: build.query({
-      query: () => "general/dashboard",
-      providesTags: ["Dashboard"],
     }),
   }),
 });

@@ -1,23 +1,28 @@
-// src/components/DataGridCustomColumnMenu.jsx
 import React from "react";
 import {
-  GridColumnMenuContainer,
-  GridColumnMenuFilterItem,
-  GridColumnMenuHideItem,
-  GridColumnMenuColumnsItem,
-  GridColumnMenuSortItem,
+  GridToolbarContainer,
+  GridToolbarColumnsButton,
+  GridToolbarFilterButton,
+  GridToolbarDensitySelector,
+  GridToolbarExport,
+  GridToolbarQuickFilter,
 } from "@mui/x-data-grid";
 
-const CustomColumnMenu = (props) => {
-  const { hideMenu, currentColumn } = props;
+export default function DataGridCustomToolbar(props) {
+  const { searchInput, setSearchInput, setSearch } = props;
   return (
-    <GridColumnMenuContainer {...props}>
-      <GridColumnMenuSortItem onClick={hideMenu} column={currentColumn} />
-      <GridColumnMenuFilterItem onClick={hideMenu} column={currentColumn} />
-      <GridColumnMenuHideItem onClick={hideMenu} column={currentColumn} />
-      <GridColumnMenuColumnsItem onClick={hideMenu} />
-    </GridColumnMenuContainer>
+    <GridToolbarContainer>
+      <GridToolbarColumnsButton />
+      <GridToolbarFilterButton />
+      <GridToolbarDensitySelector />
+      <GridToolbarExport />
+      <GridToolbarQuickFilter
+        value={searchInput}
+        onChange={(e) => setSearchInput?.(e.target.value)}
+        onDebounce={(_, v) => setSearch?.(v)}
+        debounceMs={500}
+        placeholder="Search…"
+      />
+    </GridToolbarContainer>
   );
-};
-
-export default CustomColumnMenu;
+}
